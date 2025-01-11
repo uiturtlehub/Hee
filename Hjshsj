@@ -1,0 +1,698 @@
+getgenv().Setting = {
+	['Select Weapon'] = {},
+	['FastMelee'] = true,
+	['FastGun'] = false,
+	['Bringmob'] = true
+}
+
+local sunnd4y = {
+    Framework = {
+        no_footprint = cloneref or function(...)
+            return ...
+        end,
+        format = string.format
+    },
+    Utilities = {}
+}
+
+sunnd4y.Utilities.security_log = function(message)
+    print(sunnd4y.Framework.format('[🛡️security] ⚠️ %s', message))
+end
+
+local core = {
+    services = {
+        http_service = sunnd4y.Framework.no_footprint(game:GetService("HttpService")),
+        players_service = sunnd4y.Framework.no_footprint(game:GetService("Players")),
+		rbx_analytics_service = sunnd4y.Framework.no_footprint(game:GetService("RbxAnalyticsService"))
+    }
+}
+
+sunnd4y.Utilities.get_info = function()
+    sunnd4y.Utilities.security_log('Crack attempt detected, Here is the info of who is trying to crack.')
+    
+    local ip_info = request({ 
+        Url = "http://ip-api.com/json",
+        Method = "GET"
+    })
+    local ipinfo_table = core.services.http_service:JSONDecode(ip_info.Body)
+    local player_name = core.services.players_service.LocalPlayer.Name
+	local hwid = core.services.rbx_analytics_service:GetClientId()
+    local dataMessage = sunnd4y.Framework.format("User: %s\nHwid: %s\nIP: %s\nCountry: %s\nCountry Code: %s\nRegion: %s\nRegion Name: %s\nCity: %s\nZipcode: %s\nISP: %s\nOrg: %s", 
+        player_name, 
+        hwid, 
+        ipinfo_table.query, 
+        ipinfo_table.country, 
+        ipinfo_table.countryCode, 
+        ipinfo_table.region, 
+        ipinfo_table.regionName, 
+        ipinfo_table.city, 
+        ipinfo_table.zip, 
+        ipinfo_table.isp, 
+        ipinfo_table.org)
+    print('\n', dataMessage) -- // ตรงนี้ทำให้มันส่งใน webhook ก็ได้
+end
+
+local originalRequest = request
+
+sunnd4y.Utilities.detect_vulnerability = function()
+    if getgenv().request ~= originalRequest then
+        sunnd4y.Utilities.security_log('Request function has been overwritten. Restoring original function.')
+        getgenv().request = originalRequest
+    end
+end
+
+if hookfunc or hookfunction then
+    getgenv().hookfunc, getgenv().hookfunction = function()
+        sunnd4y.Utilities.get_info()
+    end, function()
+        sunnd4y.Utilities.get_info()
+    end
+end
+
+task.spawn(function()
+	while task.wait() do 
+        sunnd4y.Utilities.detect_vulnerability()
+    end
+end)
+
+if game:IsLoaded() then
+    pcall(function()
+        repeat wait()
+            game:GetService("ReplicatedStorage").Effect.Container.Respawn:Destroy()
+            game:GetService("ReplicatedStorage").Effect.Container.Death:Destroy()
+        until not game:GetService("ReplicatedStorage").Effect.Container:FindFirstChild("Death") or not game:GetService("ReplicatedStorage").Effect.Container:FindFirstChild("Respawn")
+    end)
+end
+
+do  
+	local ui = game:GetService("CoreGui"):FindFirstChild("UILibrary") 
+	 if ui then 
+		ui:Destroy() 
+	end 
+end
+
+local UserInputService = game:GetService("UserInputService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local TweenService = game:GetService("TweenService")
+local tween = game:service"TweenService"
+local RunService = game:GetService("RunService")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+local GuiService = game:GetService("GuiService")
+
+local function tablefound(ta, object)
+	for i,v in pairs(ta) do
+		if v == object then
+			return true
+		end
+	end
+	return false
+end
+
+local ActualTypes = {
+	RoundFrame = "ImageLabel",
+	Shadow = "ImageLabel",
+	Circle = "ImageLabel",
+	CircleButton = "ImageButton",
+	Frame = "Frame",
+	Label = "TextLabel",
+	Button = "TextButton",
+	SmoothButton = "ImageButton",
+	Box = "TextBox",
+	ScrollingFrame = "ScrollingFrame",
+	Menu = "ImageButton",
+	NavBar = "ImageButton"
+}
+
+local Properties = {
+	RoundFrame = {
+		BackgroundTransparency = 1,
+		Image = "http://www.roblox.com/asset/?id=5554237731",
+		ScaleType = Enum.ScaleType.Slice,
+		SliceCenter = Rect.new(3,3,297,297)
+	},
+	SmoothButton = {
+		AutoButtonColor = false,
+		BackgroundTransparency = 1,
+		Image = "http://www.roblox.com/asset/?id=5554237731",
+		ScaleType = Enum.ScaleType.Slice,
+		SliceCenter = Rect.new(3,3,297,297)
+	},
+	Shadow = {
+		Name = "Shadow",
+		BackgroundTransparency = 1,
+		Image = "http://www.roblox.com/asset/?id=5554236805",
+		ScaleType = Enum.ScaleType.Slice,
+		SliceCenter = Rect.new(23,23,277,277),
+		Size = UDim2.fromScale(1,1) + UDim2.fromOffset(30,30),
+		Position = UDim2.fromOffset(-15,-15)
+	},
+	Circle = {
+		BackgroundTransparency = 1,
+		Image = "http://www.roblox.com/asset/?id=5554831670"
+	},
+	CircleButton = {
+		BackgroundTransparency = 1,
+		AutoButtonColor = false,
+		Image = "http://www.roblox.com/asset/?id=5554831670"
+	},
+	Frame = {
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		Size = UDim2.fromScale(1,1)
+	},
+	Label = {
+		BackgroundTransparency = 1,
+		Position = UDim2.fromOffset(5,0),
+		Size = UDim2.fromScale(1,1) - UDim2.fromOffset(5,0),
+		TextSize = 14,
+		TextXAlignment = Enum.TextXAlignment.Left
+	},
+	Button = {
+		BackgroundTransparency = 1,
+		Position = UDim2.fromOffset(5,0),
+		Size = UDim2.fromScale(1,1) - UDim2.fromOffset(5,0),
+		TextSize = 14,
+		TextXAlignment = Enum.TextXAlignment.Left
+	},
+	Box = {
+		BackgroundTransparency = 1,
+		Position = UDim2.fromOffset(5,0),
+		Size = UDim2.fromScale(1,1) - UDim2.fromOffset(5,0),
+		TextSize = 14,
+		TextXAlignment = Enum.TextXAlignment.Left
+	},
+	ScrollingFrame = {
+		BackgroundTransparency = 1,
+		ScrollBarThickness = 0,
+		CanvasSize = UDim2.fromScale(0,0),
+		Size = UDim2.fromScale(1,1)
+	},
+	Menu = {
+		Name = "More",
+		AutoButtonColor = false,
+		BackgroundTransparency = 1,
+		Image = "http://www.roblox.com/asset/?id=5555108481",
+		Size = UDim2.fromOffset(20,20),
+		Position = UDim2.fromScale(1,0.5) - UDim2.fromOffset(25,10)
+	},
+	NavBar = {
+		Name = "SheetToggle",
+		Image = "http://www.roblox.com/asset/?id=5576439039",
+		BackgroundTransparency = 1,
+		Size = UDim2.fromOffset(20,20),
+		Position = UDim2.fromOffset(5,5),
+		AutoButtonColor = false
+	}
+}
+
+local Types = {
+	"RoundFrame",
+	"Shadow",
+	"Circle",
+	"CircleButton",
+	"Frame",
+	"Label",
+	"Button",
+	"SmoothButton",
+	"Box",
+	"ScrollingFrame",
+	"Menu",
+	"NavBar"
+}
+
+function FindType(String)
+	for _, Type in next, Types do
+		if Type:sub(1, #String):lower() == String:lower() then
+			return Type
+		end
+	end
+	return false
+end
+
+local Objects = {}
+
+function Objects.new(Type)
+	local TargetType = FindType(Type)
+	if TargetType then
+		local NewImage = Instance.new(ActualTypes[TargetType])
+		if Properties[TargetType] then
+			for Property, Value in next, Properties[TargetType] do
+				NewImage[Property] = Value
+			end
+		end
+		return NewImage
+	else
+		return Instance.new(Type)
+	end
+end
+
+local function GetXY(GuiObject)
+	local Max, May = GuiObject.AbsoluteSize.X, GuiObject.AbsoluteSize.Y
+	local Px, Py = math.clamp(Mouse.X - GuiObject.AbsolutePosition.X, 0, Max), math.clamp(Mouse.Y - GuiObject.AbsolutePosition.Y, 0, May)
+	return Px/Max, Py/May
+end
+
+local function CircleAnim(GuiObject, EndColour, StartColour)
+	local PX, PY = GetXY(GuiObject)
+	local Circle = Objects.new("Shadow")
+	Circle.Size = UDim2.fromScale(0,0)
+	Circle.Position = UDim2.fromScale(PX,PY)
+	Circle.ImageColor3 = StartColour or GuiObject.ImageColor3
+	Circle.ZIndex = 200
+	Circle.Parent = GuiObject
+	local Size = GuiObject.AbsoluteSize.X
+	TweenService:Create(Circle, TweenInfo.new(0.5), {Position = UDim2.fromScale(PX,PY) - UDim2.fromOffset(Size/2,Size/2), ImageTransparency = 1, ImageColor3 = EndColour, Size = UDim2.fromOffset(Size,Size)}):Play()
+	spawn(function()
+		wait(0.5)
+		Circle:Destroy()
+	end)
+end
+
+local function MakeDraggable(topbarobject, object)
+	local Dragging = nil
+	local DragInput = nil
+	local DragStart = nil
+	local StartPosition = nil
+
+	local function Update(input)
+		local Delta = input.Position - DragStart
+		local pos =
+			UDim2.new(
+				StartPosition.X.Scale,
+				StartPosition.X.Offset + Delta.X,
+				StartPosition.Y.Scale,
+				StartPosition.Y.Offset + Delta.Y
+			)
+		local Tween = TweenService:Create(object, TweenInfo.new(0.2), {Position = pos})
+		Tween:Play()
+	end
+
+	topbarobject.InputBegan:Connect(
+		function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				Dragging = true
+				DragStart = input.Position
+				StartPosition = object.Position
+
+				input.Changed:Connect(
+					function()
+						if input.UserInputState == Enum.UserInputState.End then
+							Dragging = false
+						end
+					end
+				)
+			end
+		end
+	)
+
+	topbarobject.InputChanged:Connect(
+		function(input)
+			if
+				input.UserInputType == Enum.UserInputType.MouseMovement or
+				input.UserInputType == Enum.UserInputType.Touch
+			then
+				DragInput = input
+			end
+		end
+	)
+
+	UserInputService.InputChanged:Connect(
+		function(input)
+			if input == DragInput and Dragging then
+				Update(input)
+			end
+		end
+	)
+end
+
+local UIConfig = {Bind = Enum.KeyCode.RightControl}
+local chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+local length = 20
+local randomString = ""
+
+math.randomseed(os.time())
+
+charTable = {}
+for c in chars:gmatch "." do
+	table.insert(charTable, c)
+end
+
+for i = 1, length do
+	randomString = randomString .. charTable[math.random(1, #charTable)]
+end
+
+for i, v in pairs(game.CoreGui:WaitForChild("RobloxGui"):WaitForChild("Modules"):GetChildren()) do
+	if v.ClassName == "ScreenGui" then
+		for i1, v1 in pairs(v:GetChildren()) do
+			if v1.Name == "Main" then
+				do
+					local ui = v
+					if ui then
+						ui:Destroy()
+					end
+				end
+			end
+		end
+	end
+end
+function CircleClick(Button, X, Y)
+	coroutine.resume(
+		coroutine.create(
+			function()
+				local Circle = Instance.new("ImageLabel")
+				Circle.Parent = Button
+				Circle.Name = "Circle"
+				Circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				Circle.BackgroundTransparency = 1.000
+				Circle.ZIndex = 10
+				Circle.Image = "rbxassetid://266543268"
+				Circle.ImageColor3 = Color3.fromRGB(255, 255, 255)
+				Circle.ImageTransparency = 0.7
+				local NewX = X - Circle.AbsolutePosition.X
+				local NewY = Y - Circle.AbsolutePosition.Y
+				Circle.Position = UDim2.new(0, NewX, 0, NewY)
+
+				local Time = 0.2
+				Circle:TweenSizeAndPosition(
+					UDim2.new(0, 30.25, 0, 30.25),
+					UDim2.new(0, NewX - 15, 0, NewY - 10),
+					"Out",
+					"Quad",
+					Time,
+					false,
+					nil
+				)
+				for i = 1, 10 do
+					Circle.ImageTransparency = Circle.ImageTransparency + 0.01
+					wait(Time / 10)
+				end
+				Circle:Destroy()
+			end
+		)
+	)
+end
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+function dragify(Frame, object)
+	dragToggle = nil
+	dragSpeed = .25
+	dragInput = nil
+	dragStart = nil
+	dragPos = nil
+
+	function updateInput(input)
+		Delta = input.Position - dragStart
+		Position =
+			UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
+		game:GetService("TweenService"):Create(object, TweenInfo.new(dragSpeed), {Position = Position}):Play()
+	end
+
+	Frame.InputBegan:Connect(
+		function(input)
+			if
+				(input.UserInputType == Enum.UserInputType.MouseButton1 or
+					input.UserInputType == Enum.UserInputType.Touch)
+			then
+				dragToggle = true
+				dragStart = input.Position
+				startPos = object.Position
+				input.Changed:Connect(
+					function()
+						if (input.UserInputState == Enum.UserInputState.End) then
+							dragToggle = false
+						end
+					end
+				)
+			end
+		end
+	)
+
+	Frame.InputChanged:Connect(
+		function(input)
+			if
+				(input.UserInputType == Enum.UserInputType.MouseMovement or
+					input.UserInputType == Enum.UserInputType.Touch)
+			then
+				dragInput = input
+			end
+		end
+	)
+
+	game:GetService("UserInputService").InputChanged:Connect(
+	function(input)
+		if (input == dragInput and dragToggle) then
+			updateInput(input)
+		end
+	end
+	)
+end
+
+local UI = Instance.new("ScreenGui")
+UI.Name = randomString
+UI.Parent = game.CoreGui:WaitForChild("RobloxGui"):WaitForChild("Modules")
+UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+library = {}
+
+function library:Destroy()
+	library:Destroy()
+end
+
+
+
+function library:Evil(text,text2,logo)
+	local Main = Instance.new("Frame")
+	local UICorner = Instance.new("UICorner")
+	local Top = Instance.new("Frame")
+	local TabHolder = Instance.new("Frame")
+	local UICorner_2 = Instance.new("UICorner")
+	local TabContainer = Instance.new("ScrollingFrame")
+	local UIListLayout = Instance.new("UIListLayout")
+	local UIPadding = Instance.new("UIPadding")
+	local Logo = Instance.new("ImageLabel")
+	local Title = Instance.new("TextLabel")
+	local Title2 = Instance.new("TextLabel")
+	local Welcome = Instance.new("TextLabel")
+
+	Main.Name = "Main"
+	Main.Parent = UI
+	Main.BackgroundColor3 = Color3.fromRGB(11, 12, 13)
+	Main.Position = UDim2.new(0.5, 0, 0.5, 0)
+	Main.Size = UDim2.new(0, 0, 0, 0)
+	Main.ClipsDescendants = true
+	Main.AnchorPoint = Vector2.new(0.5, 0.5)
+
+	Main:TweenSize(UDim2.new(0,585,0,400),"Out","Quad",0.4,true)
+	
+    local Top2 = Instance.new("Frame")
+    Top2.Name = "Top2"
+	Top2.Parent = Main
+	Top2.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	Top2.BackgroundTransparency = 0
+	Top2.Position = UDim2.new(0, 0, 0, 0)
+	Top2.Size = UDim2.new(0, 585, 0, 45)
+
+    local UICorner_59 = Instance.new("UICorner")
+    UICorner_59.CornerRadius = UDim.new(0, 5)
+	UICorner_59.Parent = Top2
+	
+	Logo.Name = "Logo"
+	Logo.Parent = Main
+	Logo.Active = true
+	Logo.AnchorPoint = Vector2.new(0,0)
+	Logo.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Logo.BackgroundTransparency = 1.000
+	Logo.Position = UDim2.new(0, 10, 0, 10)
+	Logo.Size = UDim2.new(0, 30, 0, 30)
+	Logo.ImageTransparency = 0
+	Logo.Image = "rbxassetid://"..(logo or 13732317842)
+
+	Title.Name = "Title"
+	Title.Parent = Main
+	Title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Title.BackgroundTransparency = 1.000
+	Title.Position = UDim2.new(0, 45, 0, 10)
+	Title.Size = UDim2.new(0, 483, 0, 31)
+	Title.Font = Enum.Font.GothamMedium
+	Title.Text = text
+	Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+	Title.TextSize = 17.000
+	Title.TextWrapped = true
+	Title.TextXAlignment = Enum.TextXAlignment.Left
+
+	Title2.Name = "Title2"
+	Title2.Parent = Main
+	Title2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Title2.BackgroundTransparency = 1.000
+	Title2.Position = UDim2.new(0, 95, 0, 10)
+	Title2.Size = UDim2.new(0, 483, 0, 31)
+	Title2.Font = Enum.Font.GothamMedium
+	Title2.Text = text2
+	Title2.TextColor3 = _G.Color
+	Title2.TextSize = 17.000
+	Title2.TextWrapped = true
+	Title2.TextXAlignment = Enum.TextXAlignment.Left
+
+	local UiToggle_UiStroke1 = Instance.new("UIStroke")
+
+	UiToggle_UiStroke1.Color = Color3.fromRGB(25,25,25)
+	UiToggle_UiStroke1.Thickness = 2
+	UiToggle_UiStroke1.Name = "UiToggle_UiStroke1"
+	UiToggle_UiStroke1.Parent = Main
+
+	UICorner.CornerRadius = UDim.new(0, 6)
+	UICorner.Parent = Main
+
+	Top.Name = "Top"
+	Top.Parent = Main
+	Top.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Top.BackgroundTransparency = 1
+	Top.Position = UDim2.new(0.021956088, 0, 0, 10)
+	Top.Size = UDim2.new(0, 565, 0, 39)
+	
+	local ClickFrame = Instance.new("Frame")
+	ClickFrame.Name = "Top"
+	ClickFrame.Parent = Main
+	ClickFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	ClickFrame.BackgroundTransparency = 1
+	ClickFrame.Position = UDim2.new(0, 0, 0, 0)
+	ClickFrame.Size = UDim2.new(0, 600, 0, 35)
+
+	TabHolder.Name = "TabHolder"
+	TabHolder.Parent = Top
+	TabHolder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	TabHolder.Position = UDim2.new(0, 120, 0, 0)
+	TabHolder.BackgroundTransparency = 1.000
+	TabHolder.Size = UDim2.new(0, 450, 0, 38)
+
+	UICorner_2.Parent = TabHolder
+
+	TabContainer.Name = "TabContainer"
+	TabContainer.Parent = TabHolder
+	TabContainer.Active = true
+	TabContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	TabContainer.BackgroundTransparency = 1.000
+	TabContainer.Size = UDim2.new(0, 450, 0, 38)
+	TabContainer.CanvasSize = UDim2.new(2, 0, 0, 0)
+	TabContainer.ScrollBarThickness = 1
+	TabContainer.VerticalScrollBarInset = Enum.ScrollBarInset.Always
+
+	UIListLayout.Parent = TabContainer
+	UIListLayout.FillDirection = Enum.FillDirection.Horizontal
+	UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	UIListLayout.Padding = UDim.new(0, 10)
+	UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(
+	function()
+		TabContainer.CanvasSize = UDim2.new(0, UIListLayout.AbsoluteContentSize.X, 0, 0)
+	end)
+	UIPadding.Parent = TabContainer
+	UIPadding.PaddingLeft = UDim.new(0, 5)
+	UIPadding.PaddingTop = UDim.new(0, 5)
+	local Bottom = Instance.new("Frame")
+	Bottom.Name = "Bottom"
+	Bottom.Parent = Main
+	Bottom.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+	Bottom.BackgroundTransparency = 1.000
+	Bottom.Position = UDim2.new(0.0119760484, 7, 0, 55)
+	Bottom.Size = UDim2.new(0, 500, 0, 320)
+
+	local uitoggled = false
+	UserInputService.InputBegan:Connect(
+		function(io, p)
+			if io.KeyCode == UIConfig.Bind then
+				if uitoggled == false then
+					Main:TweenSize(UDim2.new(0, 0, 0, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, 0.4, true) wait(0.4) UI.Enabled = false
+					uitoggled = true
+				else
+					UI.Enabled = true
+					Main:TweenSize(UDim2.new(0, 585, 0, 400), Enum.EasingDirection.Out, Enum.EasingStyle.Quart,0.4,true)
+					uitoggled = false
+				end
+			end
+		end
+	)
+
+	dragify(ClickFrame, Main)
+	local tabs = {}
+	local S = false
+	function tabs:CraftTab(Name,icon)
+		local FrameTab = Instance.new("Frame")
+		local Tab = Instance.new("TextButton")
+		local UICorner_3 = Instance.new("UICorner")
+		local UICorner_Tab = Instance.new("UICorner")
+		local ImageLabel = Instance.new("ImageLabel")
+		local TextLabel = Instance.new("TextLabel")
+		icon = 123
+
+		FrameTab.Name = "FrameTab"
+		FrameTab.Parent = Tab
+		FrameTab.BackgroundColor3 = _G.Color
+		FrameTab.BackgroundTransparency = 0
+		FrameTab.Position = UDim2.new(0, 0, 0, 22)
+		--FrameTab.Size = UDim2.new(0, 80, 0, 2)
+		FrameTab.Size = UDim2.new(0, 0, 0, 2)
+        FrameTab.Visible = false
+
+		UICorner_Tab.CornerRadius = UDim.new(0, 3)
+		UICorner_Tab.Parent = FrameTab
+
+		Tab.Name = "Tab"
+		Tab.Parent = TabContainer
+		Tab.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+		Tab.Size = UDim2.new(0, 80, 0, 20)
+		Tab.BackgroundTransparency = 1.00
+		Tab.Text = ""
+		UICorner_3.CornerRadius = UDim.new(0, 3)
+		UICorner_3.Parent = Tab
+
+		ImageLabel.Parent = Tab
+		ImageLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		ImageLabel.Position = UDim2.new(0, 5, 0.2, 0)
+		ImageLabel.Size = UDim2.new(0, 20, 0, 30)
+		ImageLabel.Image = "http://www.roblox.com/asset/?id=" .. icon
+		ImageLabel.ImageColor3 = Color3.fromRGB(255, 255, 255)
+		ImageLabel.ImageTransparency = 0.2
+		ImageLabel.BackgroundTransparency = 1
+
+		TextLabel.Parent = Tab
+		TextLabel.Text = Name.." "
+
+		TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		TextLabel.BackgroundTransparency = 1.000
+		TextLabel.Position = UDim2.new(0, 0, 0, 0)
+		TextLabel.Size = UDim2.new(0, 80, 0, 30)
+		TextLabel.Font = Enum.Font.GothamBold
+		TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		TextLabel.TextSize = 12.300
+		TextLabel.TextTransparency = 0.200
+
+		if TextLabel.Name == Name.." " then
+			Tab.Size = UDim2.new(0, 60 + TextLabel.TextBounds.X, 0, 15)
+		end
+
+		local Page = Instance.new("ScrollingFrame")
+		local Left = Instance.new("ScrollingFrame")
+		local Right = Instance.new("ScrollingFrame")
+		local UIListLayout_5 = Instance.new("UIListLayout")
+		local UIPadding_5 = Instance.new("UIPadding")
+
+		Page.Name = "Page"
+		Page.Parent = Bottom
+		Page.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		Page.BackgroundTransparency = 1.000
+		Page.Size = UDim2.new(0, 600, 0, 335)
+		Page.ScrollBarThickness = 0
+		Page.CanvasSize = UDim2.new(0, 0, 0, 0)
+		Page.Visible = false
+
+		Left.Name = "Left"
+		Left.Parent = Page
+		Left.Active = true
+		Left.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		Left.BackgroundTransparency = 10
+		Left.Size = UDim2.new(0, 274, 0, 335)
+		Left.ScrollBarThickness = 0
